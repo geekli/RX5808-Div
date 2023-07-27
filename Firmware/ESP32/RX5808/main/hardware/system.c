@@ -15,84 +15,79 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
-
 void create_cpu_stack_monitor_task();
 void cpu_stack_monitor_task(void *param);
 
 static void led_flash_task(void *param)
 {
 
-	while(1)
+	while (1)
 	{
-         gpio_set_level(LED0_PIN, 0);
-		 vTaskDelay(300/portTICK_PERIOD_MS);
-		 gpio_set_level(LED0_PIN, 1);
-		 vTaskDelay(300/portTICK_PERIOD_MS);
+		gpio_set_level(LED0_PIN, 0);
+		vTaskDelay(300 / portTICK_PERIOD_MS);
+		gpio_set_level(LED0_PIN, 1);
+		vTaskDelay(300 / portTICK_PERIOD_MS);
 	}
 }
 
 void LED_Init()
-{ 
-    gpio_set_direction(LED0_PIN, GPIO_MODE_OUTPUT);		
+{
+	gpio_set_direction(LED0_PIN, GPIO_MODE_OUTPUT);
 	gpio_set_level(LED0_PIN, 0);
 
 	xTaskCreatePinnedToCore((TaskFunction_t)led_flash_task,
-	                          "led_task", 
-							  512, 
-							  NULL,
-							   0,
-							    NULL, 
-								0 );
-	
+							"led_task",
+							512,
+							NULL,
+							0,
+							NULL,
+							0);
 }
 
 esp_timer_handle_t esp_timer_tick = 0;
-void timer_periodic_cb(void *arg) {
-   lv_tick_inc(1);
+void timer_periodic_cb(void *arg)
+{
+	lv_tick_inc(1);
 }
 
-esp_timer_create_args_t periodic_arg = { .callback =
-		&timer_periodic_cb, 
-		.arg = NULL, 
-		.name = "LVGL_TICK_TIMER" 
-};
-
+esp_timer_create_args_t periodic_arg = {.callback =
+											&timer_periodic_cb,
+										.arg = NULL,
+										.name = "LVGL_TICK_TIMER"};
 
 void timer_init()
 {
-      esp_err_t err;
-      err = esp_timer_create(&periodic_arg, &esp_timer_tick);
-	  ESP_ERROR_CHECK(err);
-	  err = esp_timer_start_periodic(esp_timer_tick, 1 * 1000);
-      ESP_ERROR_CHECK(err);
-      //printf("Timer_Init! OK\n");
-
+	esp_err_t err;
+	err = esp_timer_create(&periodic_arg, &esp_timer_tick);
+	ESP_ERROR_CHECK(err);
+	err = esp_timer_start_periodic(esp_timer_tick, 1 * 1000);
+	ESP_ERROR_CHECK(err);
+	// printf("Timer_Init! OK\n");
 }
 
 void system_init(void)
 {
 	LCD_Init();
-	//printf("lcd init success!\n");
-	fan_Init();	
-	//printf("fan init success!\n");
- 	eeprom_24cxx_init();	
-	//printf("24cxx init success!\n");
- 	rx5808_div_setup_load();
-	//printf("setup load success!\n");
- 	LED_Init();
-	//printf("led init success!\n"); 	
- 	Beep_Init();
-	//printf("beep init success!\n");
-    timer_init();  
-	//printf("timer init success!\n");	
-    RX5808_Init();
-	//printf("RX5808 init success!\n");
-	//ws2812_init();
-	//printf("ws2812 init success!\n");
-	//while(1);
+	// printf("lcd init success!\n");
+	fan_Init();
+	// printf("fan init success!\n");
+	eeprom_24cxx_init();
+	// printf("24cxx init success!\n");
+	rx5808_div_setup_load();
+	// printf("setup load success!\n");
+	LED_Init();
+	// printf("led init success!\n");
+	Beep_Init();
+	// printf("beep init success!\n");
+	timer_init();
+	// printf("timer init success!\n");
+	RX5808_Init();
+	// printf("RX5808 init success!\n");
+	// ws2812_init();
+	// printf("ws2812 init success!\n");
+	// while(1);
 
-    //create_cpu_stack_monitor_task();
-	
+	// create_cpu_stack_monitor_task();
 }
 
 /*
@@ -101,21 +96,21 @@ make menuconfig -> Component config -> FreeRTOS -> Enable FreeRTOS trace facilit
 make menuconfig -> Component config -> FreeRTOS -> Enable FreeRTOS to collect run time stats*/
 void create_cpu_stack_monitor_task()
 {
-    xTaskCreate((TaskFunction_t )cpu_stack_monitor_task, /* 任务入口函数 */
-                  (const char* )"CPU_STACK",
-                  (uint16_t )3072, 
-                  (void* )NULL, 
-                  (UBaseType_t )1, 
-                  NULL);
+	xTaskCreate((TaskFunction_t)cpu_stack_monitor_task, /* 任务入口函数 */
+				(const char *)"CPU_STACK",
+				(uint16_t)3072,
+				(void *)NULL,
+				(UBaseType_t)1,
+				NULL);
 }
-
 
 void cpu_stack_monitor_task(void *param)
 {
-	uint8_t CPU_STACK_RunInfo[400]; 
+	uint8_t CPU_STACK_RunInfo[400];
 
-	while (1) {
-		// memset(CPU_STACK_RunInfo,0,400); 
+	while (1)
+	{
+		// memset(CPU_STACK_RunInfo,0,400);
 
 		// vTaskList((char *)&CPU_STACK_RunInfo);
 
@@ -127,13 +122,12 @@ void cpu_stack_monitor_task(void *param)
 		// memset(CPU_STACK_RunInfo,0,400);
 
 		// vTaskGetRunTimeStats((char *)&CPU_STACK_RunInfo);
-        
+
 		// printf("-----------------running_time_monitor----------------\r\n");
 		// printf("name             count              precent\r\n");printf("%s", CPU_STACK_RunInfo);
 		// printf("---------------------------------------------\r\n\n");
-		vTaskDelay(3000/portTICK_PERIOD_MS);
+		vTaskDelay(3000 / portTICK_PERIOD_MS);
 	}
-
 }
 
 /*
@@ -168,5 +162,3 @@ ipc1            18465           <1%
 Tmr Svc         12              <1%
 ---------------------------------------------
 */
-
-

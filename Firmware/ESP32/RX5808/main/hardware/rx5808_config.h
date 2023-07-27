@@ -4,7 +4,7 @@
 
 #include <stdint.h>
 
-//STM32F4 ��СFlASH����16K д���������ʱ��ϳ���������ʹ��FLASH
+//STM32F4 FLASH
 #define RX5808_CONFIGT_FLASH_EEPROM  0     //0 EEPROM  | 1 FLASH 
 
 #define  STATUS_ON   1
