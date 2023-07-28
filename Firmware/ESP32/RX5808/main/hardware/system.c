@@ -74,9 +74,9 @@ void timer_init()
 void system_init(void)
 {
 	LCD_Init();
-	// printf("lcd init success!\n");
+	ESP_LOGD(TAG, "lcd init success!");
 	fan_Init();
-	// printf("fan init success!\n");
+	ESP_LOGD(TAG, "fan init success!");
 #ifdef RX5808_CONFIGT_FLASH_EEPROM
 	nvs_init();
 	ESP_LOGI(TAG, "NVS init success!");
@@ -85,15 +85,15 @@ void system_init(void)
 	ESP_LOGI(TAG, "24cxx init success!");
 #endif	
 	rx5808_div_setup_load();
-	// printf("setup load success!\n");
+	ESP_LOGD(TAG, "setup load success!");
 	LED_Init();
-	// printf("led init success!\n");
+	ESP_LOGD(TAG, "led init success!");
 	Beep_Init();
-	// printf("beep init success!\n");
+	ESP_LOGD(TAG, "beep init success!");
 	timer_init();
-	// printf("timer init success!\n");
+	ESP_LOGD(TAG, "timer init success!");
 	RX5808_Init();
-	// printf("RX5808 init success!\n");
+	ESP_LOGD(TAG, "RX5808 init success!");
 	// ws2812_init();
 	// printf("ws2812 init success!\n");
 	// while(1);

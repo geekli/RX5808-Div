@@ -12,8 +12,9 @@ void app_main(void)
 
     system_init();
     lvgl_init();
-    while(1){
-    lv_task_handler();
-    vTaskDelay(10 / portTICK_PERIOD_MS);
+    while (1)
+    {
+        lv_task_handler();
+        vTaskDelay(10 / portTICK_PERIOD_MS);
     }
 }
