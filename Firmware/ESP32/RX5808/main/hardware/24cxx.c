@@ -26,7 +26,7 @@ void eeprom_24cxx_read_byte_len(uint16_t addr,uint8_t *databuf,uint16_t len)
 		 
 	}
     i2c_master_stop(cmd);
-    esp_err_t ret = i2c_master_cmd_begin(i2c_port, cmd, 1000 / portTICK_RATE_MS);
+    esp_err_t ret = i2c_master_cmd_begin(i2c_port, cmd, 1000 / portTICK_RATE_MS); 
     //ESP_ERROR_CHECK(ret);
     i2c_cmd_link_delete(cmd);	
 } 

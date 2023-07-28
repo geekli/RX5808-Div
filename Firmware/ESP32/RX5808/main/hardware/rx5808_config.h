@@ -4,8 +4,8 @@
 
 #include <stdint.h>
 
-//STM32F4 FLASH
-#define RX5808_CONFIGT_FLASH_EEPROM  0     //0 EEPROM  | 1 FLASH 
+//FLASH
+#define RX5808_CONFIGT_FLASH_EEPROM 
 
 #define  STATUS_ON   1
 #define  STATUS_OFF  0
@@ -43,7 +43,7 @@ typedef enum
 		rx5808_div_config_signal_source,
 		rx5808_div_config_setup_id,
 		rx5808_div_config_setup_count,
-}rx5808_div_setup_enum;
+} rx5808_div_setup_enum;
 
 void rx5808_div_setup_load(void);
 void rx5808_div_setup_upload(uint8_t index);

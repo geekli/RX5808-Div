@@ -1,6 +1,5 @@
 #include <stdint.h>
 #include "driver/gpio.h"
-#include "24cxx.h"
 #include "beep.h"
 #include "lcd.h"
 #include "rx5808.h"
@@ -14,9 +13,16 @@
 #include "hwvers.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-
+#include "esp_log.h"
+#ifdef RX5808_CONFIGT_FLASH_EEPROM
+#include "nvs_rw.h"
+#else
+#include "24cxx.h"
+#endif
 void create_cpu_stack_monitor_task();
 void cpu_stack_monitor_task(void *param);
+
+static const char* TAG = "sys";
 
 static void led_flash_task(void *param)
 {
@@ -71,8 +77,13 @@ void system_init(void)
 	// printf("lcd init success!\n");
 	fan_Init();
 	// printf("fan init success!\n");
+#ifdef RX5808_CONFIGT_FLASH_EEPROM
+	nvs_init();
+	ESP_LOGI(TAG, "NVS init success!");
+#else
 	eeprom_24cxx_init();
-	// printf("24cxx init success!\n");
+	ESP_LOGI(TAG, "24cxx init success!");
+#endif	
 	rx5808_div_setup_load();
 	// printf("setup load success!\n");
 	LED_Init();
@@ -96,7 +107,7 @@ make menuconfig -> Component config -> FreeRTOS -> Enable FreeRTOS trace facilit
 make menuconfig -> Component config -> FreeRTOS -> Enable FreeRTOS to collect run time stats*/
 void create_cpu_stack_monitor_task()
 {
-	xTaskCreate((TaskFunction_t)cpu_stack_monitor_task, /* 任务入口函数 */
+	xTaskCreate((TaskFunction_t)cpu_stack_monitor_task, 
 				(const char *)"CPU_STACK",
 				(uint16_t)3072,
 				(void *)NULL,
@@ -106,7 +117,7 @@ void create_cpu_stack_monitor_task()
 
 void cpu_stack_monitor_task(void *param)
 {
-	uint8_t CPU_STACK_RunInfo[400];
+	// uint8_t CPU_STACK_RunInfo[400];
 
 	while (1)
 	{

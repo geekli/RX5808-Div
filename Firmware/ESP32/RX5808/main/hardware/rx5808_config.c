@@ -4,20 +4,22 @@
 #include "fan.h"
 #include "rx5808.h"
 #include "page_start.h"
-#include "24cxx.h"
+
 #include "hwvers.h"
 #include <stdio.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/semphr.h"
-
-#if RX5808_CONFIGT_FLASH_EEPROM == 1
-uint32_t rx5808_div_setup[rx5808_div_config_setup_count];
+#include "esp_log.h"
+#ifdef RX5808_CONFIGT_FLASH_EEPROM
+#include "nvs_rw.h"
 #else
-uint16_t rx5808_div_setup[rx5808_div_config_setup_count];
+#include "24cxx.h"
 #endif
 
-// static SemaphoreHandle_t setup_upload_semap;
+uint16_t rx5808_div_setup[rx5808_div_config_setup_count];
+static const char* TAG = "CONFIG";
+
 static QueueHandle_t setup_upload_queue;
 
 void rx5808_setup_upload(void *param)
@@ -34,8 +36,8 @@ void rx5808_setup_upload(void *param)
 
 void rx5808_div_setup_load()
 {
-#if RX5808_CONFIGT_FLASH_EEPROM == 1
-	STMF4_FLASH_Read_Word(rx5808_div_setup, rx5808_div_config_setup_count);
+#ifdef RX5808_CONFIGT_FLASH_EEPROM
+	nvs_get_configs(rx5808_div_setup, rx5808_div_config_setup_count);
 #else
 	eeprom_24cxx_read_half_word_len(0, rx5808_div_setup, rx5808_div_config_setup_count);
 #endif
@@ -54,8 +56,9 @@ void rx5808_div_setup_load()
 		rx5808_div_setup[rx5808_div_config_language_set] = LANGUAGE_DEFAULT;
 		rx5808_div_setup[rx5808_div_config_signal_source] = SIGNAL_SOURCE_DEFAULT;
 		rx5808_div_setup[rx5808_div_config_setup_id] = SETUP_ID_DEFAULT;
-#if RX5808_CONFIGT_FLASH_EEPROM == 1
-		STMF4_FLASH_Write_Word(rx5808_div_setup, rx5808_div_config_setup_count);
+		ESP_LOGI(TAG, "init default configs");
+#ifdef RX5808_CONFIGT_FLASH_EEPROM
+		nvs_set_configs(rx5808_div_setup, rx5808_div_config_setup_count);
 #else
 		eeprom_24cxx_write_half_word_len(0, rx5808_div_setup, rx5808_div_config_setup_count);
 #endif
@@ -135,8 +138,8 @@ void rx5808_div_setup_upload_start(uint8_t index)
 		return;
 	rx5808_div_setup[index] = set_fun_arr[index]();
 
-#if RX5808_CONFIGT_FLASH_EEPROM == 1
-	STMF4_FLASH_Write_Word(rx5808_div_setup, rx5808_div_config_setup_count);
+#ifdef RX5808_CONFIGT_FLASH_EEPROM
+	nvs_set_configs(rx5808_div_setup, rx5808_div_config_setup_count);
 #else
 	// eeprom_24cxx_write_half_word_len(0,rx5808_div_setup,rx5808_div_config_setup_count);
 	eeprom_24cxx_write_half_word_len(0 + 2 * index, rx5808_div_setup + index, 1);
