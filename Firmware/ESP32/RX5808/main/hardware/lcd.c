@@ -8,10 +8,10 @@
 #include "../../lvgl.h"
 #include "hwvers.h"
 
-#define st7735_lcd_backlight_min 10
-#define st7735_lcd_backlight_max 100
+#define ST7735_LCD_BACKLIGHT_MIN 10
+#define ST7735_LCD_BACKLIGHT_MAX 100
 
-volatile uint8_t st7735_lcd_backlight = 100;
+volatile uint8_t st7735_lcd_backlight = ST7735_LCD_BACKLIGHT_MAX;
 
 inline void LCD_Writ_Bus(uint8_t dat)
 {
@@ -43,91 +43,36 @@ void LCD_WR_REG(uint8_t da)
     gpio_set_level(PIN_NUM_DC, 1);
 }
 
-void Address_Set(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
+// 设置显示区域
+void LCD_set_region(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
 {
-#ifndef USE_ST7735S
-    if (USE_HORIZONTAL == 0)
+    if (USE_HORIZONTAL == 0 || USE_HORIZONTAL == 1)
     {
-        LCD_WR_REG(0x2a); // 列地址设置
-        LCD_WR_DATA(x1 + 26);
-        LCD_WR_DATA(x2 + 26);
-        LCD_WR_REG(0x2b); // 行地址设置
-        LCD_WR_DATA(y1 + 1);
-        LCD_WR_DATA(y2 + 1);
-        LCD_WR_REG(0x2c); // 储存器写
-    }
-    else if (USE_HORIZONTAL == 1)
-    {
-        LCD_WR_REG(0x2a); // 列地址设置
-        LCD_WR_DATA(x1 + 26);
-        LCD_WR_DATA(x2 + 26);
-        LCD_WR_REG(0x2b); // 行地址设置
-        LCD_WR_DATA(y1 + 1);
-        LCD_WR_DATA(y2 + 1);
-        LCD_WR_REG(0x2c); // 储存器写
-    }
-    else if (USE_HORIZONTAL == 2)
-    {
-        LCD_WR_REG(0x2a); // 列地址设置
-        LCD_WR_DATA(x1 + 1);
-        LCD_WR_DATA(x2 + 1);
-        LCD_WR_REG(0x2b); // 行地址设置
-        LCD_WR_DATA(y1 + 26);
-        LCD_WR_DATA(y2 + 26);
-        LCD_WR_REG(0x2c); // 储存器写
-    }
-    else
-    {
-        LCD_WR_REG(0x2a); // 列地址设置
-        LCD_WR_DATA(x1 + 1);
-        LCD_WR_DATA(x2 + 1);
-        LCD_WR_REG(0x2b); // 行地址设置
-        LCD_WR_DATA(y1 + 26);
-        LCD_WR_DATA(y2 + 26);
-        LCD_WR_REG(0x2c); // 储存器写
-    }
+#ifdef USE_ST7735S
+        x1 = x1 + 24;
+        x2 = x2 + 24;    
 #else
-    if (USE_HORIZONTAL == 0)
-    {
-        LCD_WR_REG(0x2a); // 列地址设置
-        LCD_WR_DATA(x1 + 24);
-        LCD_WR_DATA(x2 + 24);
-        LCD_WR_REG(0x2b); // 行地址设置
-        LCD_WR_DATA(y1);
-        LCD_WR_DATA(y2);
-        LCD_WR_REG(0x2c); // 储存器写
-    }
-    else if (USE_HORIZONTAL == 1)
-    {
-        LCD_WR_REG(0x2a); // 列地址设置
-        LCD_WR_DATA(x1 + 24);
-        LCD_WR_DATA(x2 + 24);
-        LCD_WR_REG(0x2b); // 行地址设置
-        LCD_WR_DATA(y1);
-        LCD_WR_DATA(y2);
-        LCD_WR_REG(0x2c); // 储存器写
-    }
-    else if (USE_HORIZONTAL == 2)
-    {
-        LCD_WR_REG(0x2a); // 列地址设置
-        LCD_WR_DATA(x1);
-        LCD_WR_DATA(x2);
-        LCD_WR_REG(0x2b); // 行地址设置
-        LCD_WR_DATA(y1 + 24);
-        LCD_WR_DATA(y2 + 24);
-        LCD_WR_REG(0x2c); // 储存器写
-    }
-    else
-    {
-        LCD_WR_REG(0x2a); // 列地址设置
-        LCD_WR_DATA(x1);
-        LCD_WR_DATA(x2);
-        LCD_WR_REG(0x2b); // 行地址设置
-        LCD_WR_DATA(y1 + 24);
-        LCD_WR_DATA(y2 + 24);
-        LCD_WR_REG(0x2c); // 储存器写
-    }
+        x1 = x1 + 26;
+        x2 = x2 + 26;
+        y1 = y1 + 1;
+        y2 = y2 + 1;
 #endif
+    }
+
+    if (USE_HORIZONTAL >= 2) // 不明白这里为什么会需要偏移
+    { 
+        x1 = x1 + 1;
+        x2 = x2 + 1;
+        y1 = y1 + 26;
+        y2 = y2 + 26;
+    }
+    LCD_WR_REG(0x2a); // 列地址设置
+    LCD_WR_DATA(x1);
+    LCD_WR_DATA(x2);
+    LCD_WR_REG(0x2b); // 行地址设置
+    LCD_WR_DATA(y1);
+    LCD_WR_DATA(y2);
+    LCD_WR_REG(0x2c); // 储存器写
 }
 
 void pwm_init()
@@ -253,9 +198,9 @@ void LCD_Init(void)
         LCD_WR_DATA8(0x78);
     else
         LCD_WR_DATA8(0xA8);
-#ifndef USE_ST7735S
+
     LCD_WR_REG(0x21); // Display inversion
-#endif
+
     LCD_WR_REG(0x29); // Display on
     LCD_WR_REG(0x2A); // Set Column Address
     LCD_WR_DATA8(0x00);
@@ -283,7 +228,7 @@ void LCD_Init(void)
 void LCD_Fill(uint16_t xsta, uint16_t ysta, uint16_t xend, uint16_t yend, uint16_t color)
 {
     uint16_t i, j;
-    Address_Set(xsta, ysta, xend - 1, yend - 1); // 设置显示范围
+    LCD_set_region(xsta, ysta, xend - 1, yend - 1); // 设置显示范围
     for (i = ysta; i < yend; i++)
     {
         for (j = xsta; j < xend; j++)
@@ -297,7 +242,7 @@ extern lv_color_t lv_disp_buf1[];
 void LCD_Clear()
 {
 
-    Address_Set(0, 0, 159, 79); // 设置显示范围
+    LCD_set_region(0, 0, 159, 79); // 设置显示范围
 
     esp_err_t ret;
     spi_transaction_t t;
@@ -311,7 +256,7 @@ void LCD_Clear()
 
 void LCD_SET_BLK(int8_t light)
 {
-    if (light <= st7735_lcd_backlight_max && light >= st7735_lcd_backlight_min)
+    if (light <= ST7735_LCD_BACKLIGHT_MAX && light >= ST7735_LCD_BACKLIGHT_MIN)
     {
         st7735_lcd_backlight = light;
         mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_0, 1, st7735_lcd_backlight);
@@ -321,4 +266,9 @@ void LCD_SET_BLK(int8_t light)
 uint16_t LCD_GET_BLK(void)
 {
     return st7735_lcd_backlight;
+}
+// 反色
+void LCD_set_invert()
+{
+    LCD_WR_REG(0x21); // Display inversion
 }

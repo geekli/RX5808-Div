@@ -167,7 +167,7 @@ static void IRAM_ATTR disp_flush(lv_disp_drv_t * disp_drv, const lv_area_t * are
 	uint16_t height,width;
 	width=area->x2-area->x1+1; 			//??????????????
 	height=area->y2-area->y1+1;			//????
-    Address_Set(area->x1,area->y1,area->x2,area->y2);    
+    LCD_set_region(area->x1,area->y1,area->x2,area->y2);    
     memset(&t, 0, sizeof(t));       //Zero out the transaction
     t.length=width*height*16;       //Command is 8 bits
     //t.user=(void*)1;                //D/C needs to be set to 0
