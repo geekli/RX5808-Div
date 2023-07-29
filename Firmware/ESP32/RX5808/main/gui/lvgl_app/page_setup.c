@@ -21,22 +21,22 @@ LV_FONT_DECLARE(lv_font_chinese_12);
 
 static lv_obj_t* menu_setup_contain = NULL;
 static lv_obj_t* back_light_label;
-static lv_obj_t* fan_speed_label;
-static lv_obj_t* boot_animation_label;
-static lv_obj_t* beep_label;
-static lv_obj_t* osd_format_label;
-static lv_obj_t* language_label;
-static lv_obj_t* signal_source_label;
-static lv_obj_t* exit_label;
 static lv_obj_t* back_light_bar;
+static lv_obj_t* fan_speed_label;
 static lv_obj_t* fan_speed_bar;
+static lv_obj_t* boot_animation_label;
 static lv_obj_t* boot_animation_switch;
+static lv_obj_t* beep_label;
 static lv_obj_t* beep_switch;
+static lv_obj_t* osd_format_label;
+static lv_obj_t* osd_format_setup_label;
+static lv_obj_t* language_label;
+static lv_obj_t* language_setup_label;
+static lv_obj_t* signal_source_label;
+static lv_obj_t* signal_source_setup_label;
 static lv_obj_t* screen_invert_label;
 static lv_obj_t* screen_invert_switch;
-static lv_obj_t* osd_format_setup_label;
-static lv_obj_t* language_setup_label;
-static lv_obj_t* signal_source_setup_label;
+static lv_obj_t* exit_label;
 
 const char language_label_text[][10] = { "English","中文" };
 const char osd_format_label_text[][5] = { "PAL","NTSC" };
@@ -176,7 +176,7 @@ static void setup_event_callback(lv_event_t* event)
                 setup_fan_speed+=5;
                 if (setup_fan_speed > 100)
                     setup_fan_speed = 100;
-               fan_set_speed(setup_fan_speed);
+                fan_set_speed(setup_fan_speed);
                 lv_bar_set_value(fan_speed_bar, setup_fan_speed, LV_ANIM_OFF);
             }
             else if (obj == boot_animation_label)
@@ -262,53 +262,43 @@ static void group_obj_scroll(lv_group_t* g)
     lv_obj_scroll_to_y(lv_obj_get_parent(icon), y, LV_ANIM_ON);
 }
 
+struct MenuLang
+{
+    //lv_font_t font;
+    lv_obj_t * item;
+    char * label[2];// LANG_EN,LANG_ZH
+    //char * values[2][];
+};
+
 static void page_setup_set_language(uint16_t language)
 {
-    if (language == LANG_EN)
-    {
-        lv_obj_set_style_text_font(back_light_label, &lv_font_montserrat_12, LV_STATE_DEFAULT);
-        lv_obj_set_style_text_font(fan_speed_label, &lv_font_montserrat_12, LV_STATE_DEFAULT);
-        lv_obj_set_style_text_font(boot_animation_label, &lv_font_montserrat_12, LV_STATE_DEFAULT);
-        lv_obj_set_style_text_font(beep_label, &lv_font_montserrat_12, LV_STATE_DEFAULT);
-        lv_obj_set_style_text_font(osd_format_label, &lv_font_montserrat_12, LV_STATE_DEFAULT);
-        lv_obj_set_style_text_font(language_label, &lv_font_montserrat_12, LV_STATE_DEFAULT);
-        lv_obj_set_style_text_font(signal_source_label, &lv_font_montserrat_12, LV_STATE_DEFAULT);
-        lv_obj_set_style_text_font(exit_label, &lv_font_montserrat_12, LV_STATE_DEFAULT);
-        lv_label_set_text_fmt(back_light_label, "BackLight");
-        lv_label_set_text_fmt(screen_invert_label, "LCD Invert");
-        lv_label_set_text_fmt(fan_speed_label, "FanSpeed ");
-        lv_label_set_text_fmt(boot_animation_label, "Boot Logo");
-        lv_label_set_text_fmt(beep_label, "Beep");
-        lv_label_set_text_fmt(osd_format_label, "OSD Type");
-        lv_label_set_text_fmt(language_label, "Language");
-        lv_label_set_text_fmt(signal_source_label, "Signal");
-        lv_label_set_text_fmt(exit_label, "Save&Exit");
-        lv_label_set_text_fmt(osd_format_setup_label, (const char*)(&osd_format_label_text[osd_format_selid % 2]));
-        lv_label_set_text_fmt(language_setup_label, (const char*)(&language_label_text[language_selid % 2]));
-        lv_label_set_text_fmt(signal_source_setup_label, (const char*)(&signal_source_label_text[signal_source_selid % 4]));
-    }
-    else
-    {
-        lv_obj_set_style_text_font(back_light_label, &lv_font_chinese_12, LV_STATE_DEFAULT);
-        lv_obj_set_style_text_font(fan_speed_label, &lv_font_chinese_12, LV_STATE_DEFAULT);
-        lv_obj_set_style_text_font(boot_animation_label, &lv_font_chinese_12, LV_STATE_DEFAULT);
-        lv_obj_set_style_text_font(beep_label, &lv_font_chinese_12, LV_STATE_DEFAULT);
-        lv_obj_set_style_text_font(osd_format_label, &lv_font_chinese_12, LV_STATE_DEFAULT);
-        lv_obj_set_style_text_font(language_label, &lv_font_chinese_12, LV_STATE_DEFAULT);
-        lv_obj_set_style_text_font(signal_source_label, &lv_font_chinese_12, LV_STATE_DEFAULT);
-        lv_obj_set_style_text_font(exit_label, &lv_font_chinese_12, LV_STATE_DEFAULT);
-        lv_label_set_text_fmt(back_light_label, "屏幕背光 ");
-        lv_label_set_text_fmt(screen_invert_label, "INVERT");// 没有字体，暂时用英文
-        lv_label_set_text_fmt(fan_speed_label, "风扇转速 ");
-        lv_label_set_text_fmt(boot_animation_label, "开机动画 ");
-        lv_label_set_text_fmt(beep_label, "蜂鸣器 ");
-        lv_label_set_text_fmt(osd_format_label, "OSD制式");
-        lv_label_set_text_fmt(language_label, "系统语言 ");
-        lv_label_set_text_fmt(signal_source_label, "输出信号源 ");
-        lv_label_set_text_fmt(exit_label, "保存并退出 ");
-        lv_label_set_text_fmt(osd_format_setup_label, (const char*)(&osd_format_label_text[osd_format_selid % 2]));
-        lv_label_set_text_fmt(language_setup_label, (const char*)(&language_label_text[language_selid % 2]));
-        lv_label_set_text_fmt(signal_source_setup_label, (const char*)(&signal_source_label_chinese_text[signal_source_selid % 4]));
+    const uint8_t MENU_ITEM_NUM = 12;
+    struct MenuLang menuLangs[] = {
+        {back_light_label, {"BackLight", "屏幕背光"}},
+        {screen_invert_label, {"LCD Invert","INVERT"}},
+        {fan_speed_label, {"FanSpeed ","风扇转速"}},
+        {boot_animation_label, {"Boot Logo","开机动画"}},
+        {beep_label, {"Beep","蜂鸣器"}},
+        {osd_format_label, {"OSD Type","OSD制式"}},
+        {language_label, {"Language","系统语言"}},
+        {signal_source_label, {"Signal","输出信号源"}},
+        {exit_label, {"Save&Exit","保存并退出"}},
+
+        {osd_format_setup_label, {(const char*)(&osd_format_label_text[osd_format_selid % 2]), (const char*)(&osd_format_label_text[osd_format_selid % 2])}},
+        {language_setup_label, {(const char*)(&language_label_text[language_selid % 2]), (const char*)(&language_label_text[language_selid % 2])}},
+        {signal_source_setup_label, {(const char*)(&signal_source_label_text[signal_source_selid % 4]), (const char*)(&signal_source_label_chinese_text[signal_source_selid % 4])}}
+    };
+
+    for (uint8_t i = 0; i < MENU_ITEM_NUM; i ++) {
+        if (language == LANG_EN)
+        {
+            lv_obj_set_style_text_font(menuLangs[i].item, &lv_font_montserrat_12, LV_STATE_DEFAULT);
+            
+        } else {
+            lv_obj_set_style_text_font(menuLangs[i].item, &lv_font_chinese_12, LV_STATE_DEFAULT);
+        }
+        lv_label_set_text_fmt(menuLangs[i].item, menuLangs[i].label[language]);
+        
     }
 }
 
