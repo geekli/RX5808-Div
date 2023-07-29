@@ -27,78 +27,78 @@ static const char* TAG = "sys";
 static void led_flash_task(void *param)
 {
 
-	while (1)
-	{
-		gpio_set_level(LED0_PIN, 0);
-		vTaskDelay(300 / portTICK_PERIOD_MS);
-		gpio_set_level(LED0_PIN, 1);
-		vTaskDelay(300 / portTICK_PERIOD_MS);
-	}
+    while (1)
+    {
+        gpio_set_level(LED0_PIN, 0);
+        vTaskDelay(300 / portTICK_PERIOD_MS);
+        gpio_set_level(LED0_PIN, 1);
+        vTaskDelay(300 / portTICK_PERIOD_MS);
+    }
 }
 
 void LED_Init()
 {
-	gpio_set_direction(LED0_PIN, GPIO_MODE_OUTPUT);
-	gpio_set_level(LED0_PIN, 0);
+    gpio_set_direction(LED0_PIN, GPIO_MODE_OUTPUT);
+    gpio_set_level(LED0_PIN, 0);
 
-	xTaskCreatePinnedToCore((TaskFunction_t)led_flash_task,
-							"led_task",
-							512,
-							NULL,
-							0,
-							NULL,
-							0);
+    xTaskCreatePinnedToCore((TaskFunction_t)led_flash_task,
+                            "led_task",
+                            512,
+                            NULL,
+                            0,
+                            NULL,
+                            0);
 }
 
 esp_timer_handle_t esp_timer_tick = 0;
 void timer_periodic_cb(void *arg)
 {
-	lv_tick_inc(1);
+    lv_tick_inc(1);
 }
 
 esp_timer_create_args_t periodic_arg = {.callback =
-											&timer_periodic_cb,
-										.arg = NULL,
-										.name = "LVGL_TICK_TIMER"};
+                                            &timer_periodic_cb,
+                                        .arg = NULL,
+                                        .name = "LVGL_TICK_TIMER"};
 
 void timer_init()
 {
-	esp_err_t err;
-	err = esp_timer_create(&periodic_arg, &esp_timer_tick);
-	ESP_ERROR_CHECK(err);
-	err = esp_timer_start_periodic(esp_timer_tick, 1 * 1000);
-	ESP_ERROR_CHECK(err);
-	// printf("Timer_Init! OK\n");
+    esp_err_t err;
+    err = esp_timer_create(&periodic_arg, &esp_timer_tick);
+    ESP_ERROR_CHECK(err);
+    err = esp_timer_start_periodic(esp_timer_tick, 1 * 1000);
+    ESP_ERROR_CHECK(err);
+    // printf("Timer_Init! OK\n");
 }
 
 void system_init(void)
 {
-	LCD_Init();
-	ESP_LOGD(TAG, "lcd init success!");
-	fan_Init();
-	ESP_LOGD(TAG, "fan init success!");
+    LCD_Init();
+    ESP_LOGI(TAG, "lcd init success!");
+    fan_Init();
+    ESP_LOGD(TAG, "fan init success!");
 #ifdef RX5808_CONFIGT_FLASH_EEPROM
-	nvs_init();
-	ESP_LOGI(TAG, "NVS init success!");
+    nvs_init();
+    ESP_LOGI(TAG, "NVS init success!");
 #else
-	eeprom_24cxx_init();
-	ESP_LOGI(TAG, "24cxx init success!");
+    eeprom_24cxx_init();
+    ESP_LOGI(TAG, "24cxx init success!");
 #endif	
-	rx5808_div_setup_load();
-	ESP_LOGD(TAG, "setup load success!");
-	LED_Init();
-	ESP_LOGD(TAG, "led init success!");
-	Beep_Init();
-	ESP_LOGD(TAG, "beep init success!");
-	timer_init();
-	ESP_LOGD(TAG, "timer init success!");
-	RX5808_Init();
-	ESP_LOGD(TAG, "RX5808 init success!");
-	// ws2812_init();
-	// printf("ws2812 init success!\n");
-	// while(1);
+    rx5808_div_setup_load();
+    ESP_LOGI(TAG, "setup load success!");
+    LED_Init();
+    ESP_LOGI(TAG, "led init success!");
+    Beep_Init();
+    ESP_LOGI(TAG, "beep init success!");
+    timer_init();
+    ESP_LOGI(TAG, "timer init success!");
+    RX5808_Init();
+    ESP_LOGI(TAG, "RX5808 init success!");
+    // ws2812_init();
+    // printf("ws2812 init success!\n");
+    // while(1);
 
-	// create_cpu_stack_monitor_task();
+    create_cpu_stack_monitor_task();
 }
 
 /*
@@ -107,38 +107,38 @@ make menuconfig -> Component config -> FreeRTOS -> Enable FreeRTOS trace facilit
 make menuconfig -> Component config -> FreeRTOS -> Enable FreeRTOS to collect run time stats*/
 void create_cpu_stack_monitor_task()
 {
-	xTaskCreate((TaskFunction_t)cpu_stack_monitor_task, 
-				(const char *)"CPU_STACK",
-				(uint16_t)3072,
-				(void *)NULL,
-				(UBaseType_t)1,
-				NULL);
+    xTaskCreate((TaskFunction_t)cpu_stack_monitor_task, 
+                (const char *)"CPU_STACK",
+                (uint16_t)3072,
+                (void *)NULL,
+                (UBaseType_t)1,
+                NULL);
 }
 
 void cpu_stack_monitor_task(void *param)
 {
-	// uint8_t CPU_STACK_RunInfo[400];
+    // uint8_t CPU_STACK_RunInfo[400];
 
-	while (1)
-	{
-		// memset(CPU_STACK_RunInfo,0,400);
+    while (1)
+    {
+        // memset(CPU_STACK_RunInfo,0,400);
 
-		// vTaskList((char *)&CPU_STACK_RunInfo);
+        // vTaskList((char *)&CPU_STACK_RunInfo);
 
-		// printf("-----------------heap_monitor-----------------\r\n");
-		// printf("name        status   priority  stack  label\r\n");
-		// printf("%s", CPU_STACK_RunInfo);
-		// printf("---------------------------------------------\r\n");
+        // printf("-----------------heap_monitor-----------------\r\n");
+        // printf("name        status   priority  stack  label\r\n");
+        // printf("%s", CPU_STACK_RunInfo);
+        // printf("---------------------------------------------\r\n");
 
-		// memset(CPU_STACK_RunInfo,0,400);
+        // memset(CPU_STACK_RunInfo,0,400);
 
-		// vTaskGetRunTimeStats((char *)&CPU_STACK_RunInfo);
+        // vTaskGetRunTimeStats((char *)&CPU_STACK_RunInfo);
 
-		// printf("-----------------running_time_monitor----------------\r\n");
-		// printf("name             count              precent\r\n");printf("%s", CPU_STACK_RunInfo);
-		// printf("---------------------------------------------\r\n\n");
-		vTaskDelay(3000 / portTICK_PERIOD_MS);
-	}
+        // printf("-----------------running_time_monitor----------------\r\n");
+        // printf("name             count              precent\r\n");printf("%s", CPU_STACK_RunInfo);
+        // printf("---------------------------------------------\r\n\n");
+        vTaskDelay(3000 / portTICK_PERIOD_MS);
+    }
 }
 
 /*
