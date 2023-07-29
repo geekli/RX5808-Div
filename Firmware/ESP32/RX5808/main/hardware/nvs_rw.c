@@ -15,7 +15,7 @@ void nvs_init()
         err = nvs_flash_init();
     }
     ESP_ERROR_CHECK( err );
-    err = nvs_open("storage", NVS_READWRITE, &nvs_config_handle);
+    err = nvs_open("storage3", NVS_READWRITE, &nvs_config_handle);
     if (err != ESP_OK) {
         printf("Error (%s) opening NVS handle!\n", esp_err_to_name(err));
     } 
@@ -32,7 +32,7 @@ void nvs_get_configs(uint16_t *configs, uint16_t len)
         err = nvs_get_u16(nvs_config_handle, keyname, &val);
         switch (err) {
             case ESP_OK:
-                ESP_LOGI(TAG, "key:%s %u",keyname, val);
+                ESP_LOGI(TAG, "read key:%s %u",keyname, val);
                 configs[i] = val;
                 break;
             case ESP_ERR_NVS_NOT_FOUND:
@@ -53,6 +53,7 @@ void nvs_set_configs(uint16_t *configs,uint16_t len)
     char  keyname[10];
     for(uint16_t i=0; i<len; i++) {
         sprintf(keyname, "cnf%u", i);
+        ESP_LOGI(TAG, "save config %s %u", keyname, configs[i]);
         err = nvs_set_u16(nvs_config_handle, keyname, configs[i]);
         if(err == ESP_OK) {
             ESP_LOGI(TAG, "save key:%s %u",keyname, configs[i]);
@@ -60,5 +61,22 @@ void nvs_set_configs(uint16_t *configs,uint16_t len)
         else {
             ESP_LOGE(TAG, "save (%s) !", esp_err_to_name(err));
         }
+    }
+}
+
+bool nvs_set_config(uint16_t key, uint16_t val)
+{
+    char  keyname[10];
+    esp_err_t err;
+    sprintf(keyname, "cnf%u", key);
+    ESP_LOGI(TAG, "save config %s %u", keyname, val);
+    err = nvs_set_u16(nvs_config_handle, keyname, val);
+    if(err == ESP_OK) {
+        ESP_LOGI(TAG, "save key:%s %u",keyname, val);
+        return true;
+    }
+    else {
+        ESP_LOGE(TAG, "save (%s) !", esp_err_to_name(err));
+        return false;
     }
 }

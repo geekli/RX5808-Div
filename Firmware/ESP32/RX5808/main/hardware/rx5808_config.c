@@ -92,7 +92,7 @@ void rx5808_div_setup_load()
 	}
 	xTaskCreatePinnedToCore((TaskFunction_t)rx5808_setup_upload,
 							"upload_task",
-							1024,
+							1024*2,
 							NULL,
 							2,
 							NULL,
@@ -139,7 +139,8 @@ void rx5808_div_setup_upload_start(uint8_t index)
 	rx5808_div_setup[index] = set_fun_arr[index]();
 
 #ifdef RX5808_CONFIGT_FLASH_EEPROM
-	nvs_set_configs(rx5808_div_setup, rx5808_div_config_setup_count);
+	//nvs_set_configs(rx5808_div_setup, rx5808_div_config_setup_count);
+	nvs_set_config(index, rx5808_div_setup[index]);
 #else
 	// eeprom_24cxx_write_half_word_len(0,rx5808_div_setup,rx5808_div_config_setup_count);
 	eeprom_24cxx_write_half_word_len(0 + 2 * index, rx5808_div_setup + index, 1);
