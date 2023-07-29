@@ -29,7 +29,7 @@ void rx5808_setup_upload(void *param)
 		// xSemaphoreTake(setup_upload_semap,portMAX_DELAY);
 		uint8_t index = 0;
 		xQueueReceive(setup_upload_queue, &index, portMAX_DELAY);
-		rx5808_div_setup_upload_start(index);
+		rx5808_div_save_setting(index);
 		vTaskDelay(10 / portTICK_PERIOD_MS);
 	}
 }
@@ -46,6 +46,7 @@ void rx5808_div_setup_load()
 		rx5808_div_setup[rx5808_div_config_start_animation] = START_ANIMATION_DEFAULT;
 		rx5808_div_setup[rx5808_div_config_beep] = BEEP_DEFAULT;
 		rx5808_div_setup[rx5808_div_config_backlight] = BACKLIGHT_DEFAULT;
+		rx5808_div_setup[rx5808_div_config_screen_invert] = SCREEN_INVERT_DEFAULT;
 		rx5808_div_setup[rx5808_div_config_fan_speed] = FAN_SPEED_DEFAULT;
 		rx5808_div_setup[rx5808_div_config_channel] = CHANNEL_DEFAULT;
 		rx5808_div_setup[rx5808_div_config_rssi_adc_value_min0] = RSSI0_MIN_DEFAULT;
@@ -67,6 +68,7 @@ void rx5808_div_setup_load()
 	page_set_animation_en(rx5808_div_setup[rx5808_div_config_start_animation]);
 	beep_set_enable_disable(rx5808_div_setup[rx5808_div_config_beep]);
 	LCD_SET_BLK(rx5808_div_setup[rx5808_div_config_backlight]);
+	LCD_set_invert_state(rx5808_div_setup[rx5808_div_config_screen_invert]);
 	fan_set_speed(rx5808_div_setup[rx5808_div_config_fan_speed]);
 	Rx5808_Set_Channel(rx5808_div_setup[rx5808_div_config_channel]);
 	RX5808_Set_RSSI_Ad_Min0(rx5808_div_setup[rx5808_div_config_rssi_adc_value_min0]);
@@ -109,6 +111,7 @@ uint16_t (*set_fun_arr[rx5808_div_config_setup_count - 1])() = {
 	page_get_animation_en,
 	beep_get_status,
 	LCD_GET_BLK,
+	LCD_is_invert,
 	fan_get_speed,
 	Rx5808_Get_Channel,
 	RX5808_Get_RSSI_Ad_Min0,
@@ -119,7 +122,8 @@ uint16_t (*set_fun_arr[rx5808_div_config_setup_count - 1])() = {
 	RX5808_Get_Language,
 	RX5808_Get_Signal_Source};
 
-void rx5808_div_setup_upload_start(uint8_t index)
+// 持久保存配置
+void rx5808_div_save_setting(uint8_t index)
 {
 	// rx5808_div_setup[rx5808_div_config_start_animation]=page_get_animation_en();
 	// rx5808_div_setup[rx5808_div_config_beep]=beep_get_status();;

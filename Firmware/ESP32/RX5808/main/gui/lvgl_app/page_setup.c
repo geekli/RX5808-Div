@@ -32,6 +32,8 @@ static lv_obj_t* back_light_bar;
 static lv_obj_t* fan_speed_bar;
 static lv_obj_t* boot_animation_switch;
 static lv_obj_t* beep_switch;
+static lv_obj_t* screen_invert_label;
+static lv_obj_t* screen_invert_switch;
 static lv_obj_t* osd_format_setup_label;
 static lv_obj_t* language_setup_label;
 static lv_obj_t* signal_source_setup_label;
@@ -70,9 +72,10 @@ static void setup_event_callback(lv_event_t* event)
         beep_turn_on();
         lv_key_t key_status = lv_indev_get_key(lv_indev_get_act());
         if (key_status == LV_KEY_ENTER) {
-            if (obj == exit_label) {
+            if (obj == exit_label) {// 退出并保存设置
                 page_set_animation_en(lv_obj_has_state(boot_animation_switch, LV_STATE_CHECKED));
                 beep_set_enable_disable(lv_obj_has_state(beep_switch, LV_STATE_CHECKED));
+                LCD_set_invert_state(lv_obj_has_state(screen_invert_switch, LV_STATE_CHECKED));
                 //LCD_SET_BLK(setup_back_light);
                 rx5808_div_setup_upload(rx5808_div_config_start_animation);
                 rx5808_div_setup_upload(rx5808_div_config_beep);
@@ -96,6 +99,16 @@ static void setup_event_callback(lv_event_t* event)
                     lv_obj_clear_state(beep_switch, LV_STATE_CHECKED);
                 else
                     lv_obj_add_state(beep_switch, LV_STATE_CHECKED);
+            }
+            else if (obj == screen_invert_label)
+            {
+                if (lv_obj_has_state(screen_invert_switch, LV_STATE_CHECKED) == true) {
+                    lv_obj_clear_state(screen_invert_switch, LV_STATE_CHECKED);
+                    LCD_set_invert(false);
+                } else {
+                    lv_obj_add_state(screen_invert_switch, LV_STATE_CHECKED);
+                    LCD_set_invert(true);
+                }    
             }
         }
         else if (key_status == LV_KEY_LEFT) {
@@ -251,7 +264,7 @@ static void group_obj_scroll(lv_group_t* g)
 
 static void page_setup_set_language(uint16_t language)
 {
-    if (language == 0)
+    if (language == LANG_EN)
     {
         lv_obj_set_style_text_font(back_light_label, &lv_font_montserrat_12, LV_STATE_DEFAULT);
         lv_obj_set_style_text_font(fan_speed_label, &lv_font_montserrat_12, LV_STATE_DEFAULT);
@@ -262,6 +275,7 @@ static void page_setup_set_language(uint16_t language)
         lv_obj_set_style_text_font(signal_source_label, &lv_font_montserrat_12, LV_STATE_DEFAULT);
         lv_obj_set_style_text_font(exit_label, &lv_font_montserrat_12, LV_STATE_DEFAULT);
         lv_label_set_text_fmt(back_light_label, "BackLight");
+        lv_label_set_text_fmt(screen_invert_label, "LCD Invert");
         lv_label_set_text_fmt(fan_speed_label, "FanSpeed ");
         lv_label_set_text_fmt(boot_animation_label, "Boot Logo");
         lv_label_set_text_fmt(beep_label, "Beep");
@@ -284,6 +298,7 @@ static void page_setup_set_language(uint16_t language)
         lv_obj_set_style_text_font(signal_source_label, &lv_font_chinese_12, LV_STATE_DEFAULT);
         lv_obj_set_style_text_font(exit_label, &lv_font_chinese_12, LV_STATE_DEFAULT);
         lv_label_set_text_fmt(back_light_label, "屏幕背光 ");
+        lv_label_set_text_fmt(screen_invert_label, "INVERT");// 没有字体，暂时用英文
         lv_label_set_text_fmt(fan_speed_label, "风扇转速 ");
         lv_label_set_text_fmt(boot_animation_label, "开机动画 ");
         lv_label_set_text_fmt(beep_label, "蜂鸣器 ");
@@ -312,54 +327,80 @@ void page_setup_create()
     lv_obj_set_style_bg_opa(menu_setup_contain, (lv_opa_t)LV_OPA_COVER, LV_STATE_DEFAULT);
     lv_obj_set_size(menu_setup_contain, 160, 80);
     lv_obj_set_pos(menu_setup_contain, 0, 0);
-
-
+    lv_coord_t LINE = 2;
+    static const lv_coord_t LINE_H = 19;
+    static const lv_coord_t LABEL_W = 75;
+    static const lv_coord_t LABEL_H = 20;
+    
+    // 背光
     back_light_label = lv_label_create(menu_setup_contain);
     lv_obj_add_style(back_light_label, &style_label, LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(back_light_label, LABEL_FOCUSE_COLOR, LV_STATE_FOCUSED);
-    //lv_label_set_text_fmt(back_light_label, "BackLight");
-    lv_obj_set_pos(back_light_label, 0, 2);
-    lv_obj_set_size(back_light_label, 75, 20);
+    lv_obj_set_pos(back_light_label, 0, LINE);
+    lv_obj_set_size(back_light_label, LABEL_W, LABEL_H);
     lv_label_set_long_mode(back_light_label, LV_LABEL_LONG_WRAP);
 
     back_light_bar = lv_bar_create(menu_setup_contain);
     lv_obj_remove_style(back_light_bar, NULL, LV_PART_KNOB);
     lv_obj_set_size(back_light_bar, 50, 14);
+    lv_obj_set_pos(back_light_bar, 110, LINE+3);
     lv_obj_set_style_bg_color(back_light_bar, BAR_COLOR, LV_PART_INDICATOR);
-    lv_obj_set_pos(back_light_bar, 110, 5);
     setup_back_light = LCD_GET_BLK();
     lv_bar_set_value(back_light_bar, setup_back_light, LV_ANIM_ON);
     lv_obj_set_style_anim_time(back_light_bar, 200, LV_STATE_DEFAULT);
 
+
+    // 屏幕反色
+    LINE += LINE_H;
+    screen_invert_label= lv_label_create(menu_setup_contain);
+    lv_obj_add_style(screen_invert_label, &style_label, LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_color(screen_invert_label, LABEL_FOCUSE_COLOR, LV_STATE_FOCUSED);
+    //lv_label_set_text_fmt(screen_invert_label, "INVERT");
+    lv_obj_set_pos(screen_invert_label, 0, LINE);
+    lv_obj_set_size(screen_invert_label, LABEL_W, LABEL_H);
+    lv_label_set_long_mode(screen_invert_label, LV_LABEL_LONG_WRAP);
+
+    screen_invert_switch = lv_switch_create(menu_setup_contain);
+    lv_obj_set_style_border_opa(screen_invert_switch, 0, LV_STATE_DEFAULT);
+    lv_obj_set_pos(screen_invert_switch, 110, LINE+3);
+    lv_obj_set_size(screen_invert_switch, 50, 14);
+    lv_obj_set_style_bg_color(screen_invert_switch, SWITCH_COLOR, LV_PART_INDICATOR | LV_STATE_CHECKED);
+    if (LCD_is_invert() == true) 
+        lv_obj_add_state(screen_invert_switch, LV_STATE_CHECKED);
+    else
+        lv_obj_clear_state(screen_invert_switch, LV_STATE_CHECKED);
+
+    // 风扇转速
+    LINE += LINE_H;
     fan_speed_label = lv_label_create(menu_setup_contain);
     lv_obj_add_style(fan_speed_label, &style_label, LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(fan_speed_label, LABEL_FOCUSE_COLOR, LV_STATE_FOCUSED);
-    //lv_label_set_text_fmt(fan_speed_label, "BackLight");
-    lv_obj_set_pos(fan_speed_label, 0, 21);
-    lv_obj_set_size(fan_speed_label, 75, 20);
+    lv_obj_set_pos(fan_speed_label, 0, LINE);
+    lv_obj_set_size(fan_speed_label, LABEL_W, LABEL_H);
     lv_label_set_long_mode(fan_speed_label, LV_LABEL_LONG_WRAP);
 
     fan_speed_bar = lv_bar_create(menu_setup_contain);
     lv_obj_remove_style(fan_speed_bar, NULL, LV_PART_KNOB);
+    lv_obj_set_pos(fan_speed_bar, 110, LINE+3);
     lv_obj_set_size(fan_speed_bar, 50, 14);
     lv_obj_set_style_bg_color(fan_speed_bar, BAR_COLOR, LV_PART_INDICATOR);
-    lv_obj_set_pos(fan_speed_bar, 110, 24);
     setup_fan_speed = fan_get_speed();
     lv_bar_set_value(fan_speed_bar, setup_fan_speed, LV_ANIM_ON);
     lv_obj_set_style_anim_time(fan_speed_bar, 200, LV_STATE_DEFAULT);
 
+    // 开机动画
+    LINE += LINE_H;
     boot_animation_label = lv_label_create(menu_setup_contain);
     lv_obj_add_style(boot_animation_label, &style_label, LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(boot_animation_label, LABEL_FOCUSE_COLOR, LV_STATE_FOCUSED);
-    //lv_label_set_text_fmt(boot_animation_label, "Boot Logo");
-    lv_obj_set_size(boot_animation_label, 75, 20);
-    lv_obj_set_pos(boot_animation_label, 0, 40);
+    lv_obj_set_pos(boot_animation_label, 0, LINE);
+    lv_obj_set_size(boot_animation_label, LABEL_W, LABEL_H);
     lv_label_set_long_mode(boot_animation_label, LV_LABEL_LONG_WRAP);
 
     boot_animation_switch = lv_switch_create(menu_setup_contain);
     lv_obj_set_style_border_opa(boot_animation_switch, 0, LV_STATE_DEFAULT);
+    lv_obj_set_pos(boot_animation_switch, 110, LINE+3);
     lv_obj_set_size(boot_animation_switch, 50, 14);
-    lv_obj_set_pos(boot_animation_switch, 110, 43);
     lv_obj_set_style_bg_color(boot_animation_switch, SWITCH_COLOR, LV_PART_INDICATOR | LV_STATE_CHECKED);
     boot_animation_state = page_get_animation_en();
     if (boot_animation_state == true)
@@ -367,18 +408,20 @@ void page_setup_create()
     else
         lv_obj_clear_state(boot_animation_switch, LV_STATE_CHECKED);
 
+    // 蜂鸣器
+    LINE += LINE_H;
     beep_label = lv_label_create(menu_setup_contain);
     lv_obj_add_style(beep_label, &style_label, LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(beep_label, LABEL_FOCUSE_COLOR, LV_STATE_FOCUSED);
     //lv_label_set_text_fmt(beep_label, "Beep");
-    lv_obj_set_pos(beep_label, 0, 59);
-    lv_obj_set_size(beep_label, 75, 20);
+    lv_obj_set_pos(beep_label, 0, LINE);
+    lv_obj_set_size(beep_label, LABEL_W, LABEL_H);
     lv_label_set_long_mode(beep_label, LV_LABEL_LONG_WRAP);
 
     beep_switch = lv_switch_create(menu_setup_contain);
     lv_obj_set_style_border_opa(beep_switch, 0, LV_STATE_DEFAULT);
     lv_obj_set_size(beep_switch, 50, 14);
-    lv_obj_set_pos(beep_switch, 110, 62);
+    lv_obj_set_pos(beep_switch, 110, LINE+3);
     lv_obj_set_style_bg_color(beep_switch, SWITCH_COLOR, LV_PART_INDICATOR | LV_STATE_CHECKED);
     beep_state = beep_get_status();
     if (beep_state == true)
@@ -386,27 +429,30 @@ void page_setup_create()
     else
         lv_obj_clear_state(beep_switch, LV_STATE_CHECKED);
     
-
+    // OSD 制式
+    LINE += LINE_H;
     osd_format_label = lv_label_create(menu_setup_contain);
     lv_obj_add_style(osd_format_label, &style_label, LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(osd_format_label, LABEL_FOCUSE_COLOR, LV_STATE_FOCUSED);   
-    lv_obj_set_pos(osd_format_label, 0, 78);
-    lv_obj_set_size(osd_format_label, 75, 20);
+    lv_obj_set_pos(osd_format_label, 0, LINE);
+    lv_obj_set_size(osd_format_label, LABEL_W, LABEL_H);
     lv_label_set_long_mode(osd_format_label, LV_LABEL_LONG_WRAP);
 
     osd_format_setup_label = lv_label_create(menu_setup_contain);
     lv_obj_add_style(osd_format_setup_label, &style_setup_item, LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(osd_format_setup_label, LABEL_FOCUSE_COLOR, LV_STATE_FOCUSED);
-    lv_obj_set_pos(osd_format_setup_label, 110, 78);
+    lv_obj_set_pos(osd_format_setup_label, 110, LINE);
     lv_obj_set_size(osd_format_setup_label, 50, 18);
     lv_label_set_long_mode(osd_format_setup_label, LV_LABEL_LONG_WRAP);
 
+    // 语言
+    LINE += LINE_H;
     language_label = lv_label_create(menu_setup_contain);
     lv_obj_add_style(language_label, &style_label, LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(language_label, LABEL_FOCUSE_COLOR, LV_STATE_FOCUSED);
     //lv_label_set_text_fmt(language_label, "Language");
-    lv_obj_set_pos(language_label, 0, 97);
-    lv_obj_set_size(language_label, 75, 20);
+    lv_obj_set_pos(language_label, 0, LINE);
+    lv_obj_set_size(language_label, LABEL_W, LABEL_H);
     lv_label_set_long_mode(language_label, LV_LABEL_LONG_WRAP);
 
 
@@ -414,33 +460,38 @@ void page_setup_create()
     lv_obj_add_style(language_setup_label, &style_setup_item, LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(language_setup_label, LABEL_FOCUSE_COLOR, LV_STATE_FOCUSED);
     //lv_label_set_text_fmt(language_setup_label, (const char*)(&language_label_text[language_selid % 2]));
-    lv_obj_set_pos(language_setup_label, 110, 97);
+    lv_obj_set_pos(language_setup_label, 110, LINE);
     lv_obj_set_size(language_setup_label, 50, 18);
     lv_label_set_long_mode(language_setup_label, LV_LABEL_LONG_WRAP);
 
+    // 信号源
+    LINE += LINE_H;
     signal_source_label = lv_label_create(menu_setup_contain);
     lv_obj_add_style(signal_source_label, &style_label, LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(signal_source_label, LABEL_FOCUSE_COLOR, LV_STATE_FOCUSED);
     //lv_label_set_text_fmt(signal_source_label, "Signal");
-    lv_obj_set_pos(signal_source_label, 0, 116);
-    lv_obj_set_size(signal_source_label, 75, 20);
+    lv_obj_set_pos(signal_source_label, 0, LINE);
+    lv_obj_set_size(signal_source_label, LABEL_W, LABEL_H);
     lv_label_set_long_mode(signal_source_label, LV_LABEL_LONG_WRAP);
 
     signal_source_setup_label = lv_label_create(menu_setup_contain);
     lv_obj_add_style(signal_source_setup_label, &style_setup_item, LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(signal_source_setup_label, LABEL_FOCUSE_COLOR, LV_STATE_FOCUSED);
     //lv_label_set_text_fmt(signal_source_setup_label, (const char*)(&signal_source_label_text[signal_source_selid % 4]));
-    lv_obj_set_pos(signal_source_setup_label, 110, 116);
+    lv_obj_set_pos(signal_source_setup_label, 110, LINE);
     lv_obj_set_size(signal_source_setup_label, 50, 18);
     lv_label_set_long_mode(signal_source_setup_label, LV_LABEL_LONG_WRAP);
 
+    // 保存退出
+    LINE += LINE_H;
     exit_label = lv_label_create(menu_setup_contain);
     lv_obj_add_style(exit_label, &style_label, LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(exit_label, LABEL_FOCUSE_COLOR, LV_STATE_FOCUSED);
     //lv_label_set_text_fmt(exit_label, "SAVE&EXIT");
-    lv_obj_set_pos(exit_label, 0, 135);
-    lv_obj_set_size(exit_label, 75, 20);
+    lv_obj_set_pos(exit_label, 0, LINE);
+    lv_obj_set_size(exit_label, LABEL_W, LABEL_H);
     lv_label_set_long_mode(exit_label, LV_LABEL_LONG_WRAP);
+
 
     page_setup_set_language(RX5808_Get_Language());
 
@@ -448,6 +499,7 @@ void page_setup_create()
     lv_indev_set_group(indev_keypad, setup_group);
     lv_obj_add_event_cb(boot_animation_label, setup_event_callback, LV_EVENT_KEY, NULL);
     lv_obj_add_event_cb(back_light_label, setup_event_callback, LV_EVENT_KEY, NULL);
+    lv_obj_add_event_cb(screen_invert_label, setup_event_callback, LV_EVENT_KEY, NULL);
     lv_obj_add_event_cb(fan_speed_label, setup_event_callback, LV_EVENT_KEY, NULL);
     lv_obj_add_event_cb(beep_label, setup_event_callback, LV_EVENT_KEY, NULL);
     lv_obj_add_event_cb(osd_format_label, setup_event_callback, LV_EVENT_KEY, NULL);
@@ -456,6 +508,7 @@ void page_setup_create()
     lv_obj_add_event_cb(exit_label, setup_event_callback, LV_EVENT_KEY, NULL);
 
     lv_group_add_obj(setup_group, back_light_label);
+    lv_group_add_obj(setup_group, screen_invert_label);
     lv_group_add_obj(setup_group, fan_speed_label);
     lv_group_add_obj(setup_group, boot_animation_label);
     lv_group_add_obj(setup_group, beep_label);
@@ -463,6 +516,7 @@ void page_setup_create()
     lv_group_add_obj(setup_group, language_label);
     lv_group_add_obj(setup_group, signal_source_label);
     lv_group_add_obj(setup_group, exit_label);
+    
     lv_group_set_editing(setup_group, true);
 
     lv_group_set_focus_cb(setup_group, group_obj_scroll);

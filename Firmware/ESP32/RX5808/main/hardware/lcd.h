@@ -2,6 +2,7 @@
 #define _LCD_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 
 //画笔颜色
@@ -59,6 +60,9 @@ void LCD_Init(void);//LCD初始化
 void LCD_Fill(uint16_t xsta,uint16_t ysta,uint16_t xend,uint16_t yend,uint16_t color);//指定区域填充颜色
 void LCD_Clear(void);
 void LCD_SET_BLK(int8_t light);
+void LCD_set_invert(bool invert);
+void LCD_set_invert_state(bool invert);
+uint16_t LCD_is_invert();
 uint16_t LCD_GET_BLK(void);
 
 

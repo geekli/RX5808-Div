@@ -6,7 +6,7 @@
 #define RX5808_VERSION_MINOR  5
 #define RX5808_VERSION_PATCH  0
 
-#define USE_ST7735S //LCD驱动芯片是 ST7735S
+//#define USE_ST7735S //LCD驱动芯片是 ST7735S
 #define D0WDQ6_VER  //ESP32-WROOM
 
 #define SPI_LOW_SPEED

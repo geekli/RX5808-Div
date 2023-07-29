@@ -8,10 +8,15 @@
 
 #define STATUS_ON 1
 #define STATUS_OFF 0
-
+typedef enum
+{
+	LANG_EN,
+	LANG_ZH,
+} SETTING_LANG;
 #define START_ANIMATION_DEFAULT STATUS_ON
 #define BEEP_DEFAULT STATUS_ON
 #define BACKLIGHT_DEFAULT 100
+#define SCREEN_INVERT_DEFAULT 1
 #define FAN_SPEED_DEFAULT 100
 #define CHANNEL_DEFAULT 0
 #define RSSI0_MIN_DEFAULT 0
@@ -19,7 +24,7 @@
 #define RSSI1_MIN_DEFAULT 0
 #define RSSI1_MAX_DEFAULT 4095
 #define OSD_FORMAT_DEFAULT 0
-#define LANGUAGE_DEFAULT 1		// chinese
+#define LANGUAGE_DEFAULT LANG_ZH		// chinese
 #define SIGNAL_SOURCE_DEFAULT 0 // auto
 
 #define SETUP_ID_DEFAULT 0x1234
@@ -29,6 +34,7 @@ typedef enum
 	rx5808_div_config_start_animation = 0,
 	rx5808_div_config_beep,
 	rx5808_div_config_backlight,
+	rx5808_div_config_screen_invert,
 	rx5808_div_config_fan_speed,
 	rx5808_div_config_channel,
 	rx5808_div_config_rssi_adc_value_min0,
@@ -44,7 +50,7 @@ typedef enum
 
 void rx5808_div_setup_load(void);
 void rx5808_div_setup_upload(uint8_t index);
-void rx5808_div_setup_upload_start(uint8_t index);
+void rx5808_div_save_setting(uint8_t index);
 
 #ifdef __cplusplus
 /*extern "C"*/

@@ -12,6 +12,7 @@
 #define ST7735_LCD_BACKLIGHT_MAX 100
 
 volatile uint8_t st7735_lcd_backlight = ST7735_LCD_BACKLIGHT_MAX;
+volatile uint8_t st7735_lcd_inversion = false;
 
 inline void LCD_Writ_Bus(uint8_t dat)
 {
@@ -198,9 +199,9 @@ void LCD_Init(void)
         LCD_WR_DATA8(0x78);
     else
         LCD_WR_DATA8(0xA8);
-
-    LCD_WR_REG(0x21); // Display inversion
-
+    if (st7735_lcd_inversion) {
+        LCD_WR_REG(0x21); // Display inversion
+    }
     LCD_WR_REG(0x29); // Display on
     LCD_WR_REG(0x2A); // Set Column Address
     LCD_WR_DATA8(0x00);
@@ -267,8 +268,21 @@ uint16_t LCD_GET_BLK(void)
 {
     return st7735_lcd_backlight;
 }
-// 反色
-void LCD_set_invert()
+// 反色 -只设置状态，预览，不保存
+void LCD_set_invert(bool invert)
 {
-    LCD_WR_REG(0x21); // Display inversion
+    if (invert) {
+        LCD_WR_REG(0x21); // Display inversion
+        return;
+    }
+    LCD_WR_REG(0x20); // Display inversion off
+}
+void LCD_set_invert_state(bool invert)
+{
+    LCD_set_invert(invert);
+    st7735_lcd_inversion = invert;
+}
+uint16_t LCD_is_invert()
+{
+    return st7735_lcd_inversion;
 }
