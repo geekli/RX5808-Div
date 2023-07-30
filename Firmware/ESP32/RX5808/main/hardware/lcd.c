@@ -5,7 +5,7 @@
 #include "driver/mcpwm.h"
 #include "soc/mcpwm_reg.h"
 #include "soc/mcpwm_struct.h"
-#include "../../lvgl.h"
+#include "lvgl.h"
 #include "hwvers.h"
 
 #define ST7735_LCD_BACKLIGHT_MIN 10

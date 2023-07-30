@@ -10,7 +10,7 @@ extern "C" {
     /*********************
     *      INCLUDES
     *********************/
-#include "../lvgl/lvgl.h"
+#include "lvgl.h"
 #include "page_main.h"
 
     /*********************

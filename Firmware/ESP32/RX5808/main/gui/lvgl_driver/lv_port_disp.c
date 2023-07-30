@@ -10,7 +10,7 @@
  *      INCLUDES
  *********************/
 #include "lv_port_disp.h"
-#include "../../lvgl.h"
+#include "lvgl.h"
 #include "lcd.h"
 #include "capi_video.h"
 #include "driver/gpio.h"
@@ -21,6 +21,8 @@
 /*********************
  *      DEFINES
  *********************/
+#define MY_DISP_HOR_RES          (160)
+#define MY_DISP_VER_RES          (80) 
 #define DISP_BUF_SIZE        (MY_DISP_HOR_RES * MY_DISP_VER_RES)
 #define DAC_VIDEO_SWITCH     19
 #define DAC_VIDEO_PIN     25

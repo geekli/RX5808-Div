@@ -3,7 +3,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "lv_port_disp.h"
-#include "../../lvgl.h"
+#include "lvgl.h"
 #include "hwvers.h"
 
 #define SPI_BAUDRATE_84MHZ  84*1000*1000
