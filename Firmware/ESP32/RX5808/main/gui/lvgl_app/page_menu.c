@@ -191,7 +191,7 @@ static void menu_item_label_update()
             case item_scan:  lv_label_set_text_fmt(rx5808_div_menu[i].item_label0, "RSSI1: %d%%", (int)Rx5808_Get_Precentage1());
                 lv_label_set_text_fmt(rx5808_div_menu[i].item_label1, "RSSI2: %d%%", (int)Rx5808_Get_Precentage0()); break;
                 //case item_setup: lv_label_set_text_fmt(rx5808_div_menu[i].item_label0, "Light:%d%%", LCD_GET_BLK()); break;
-            case item_about: lv_label_set_text_fmt(rx5808_div_menu[i].item_label0, "Battery:%.3fV", Get_Battery_Voltage()); break;
+            case item_about: lv_label_set_text_fmt(rx5808_div_menu[i].item_label0, "Battery:%.2fV", Get_Battery_Voltage()); break;
             default:break;
             }
         }
@@ -201,7 +201,7 @@ static void menu_item_label_update()
             {
             case item_scan:  lv_label_set_text_fmt(rx5808_div_menu[i].item_label0, "信号1:%d%%", (int)Rx5808_Get_Precentage1());
                 lv_label_set_text_fmt(rx5808_div_menu[i].item_label1, "信号2:%d%%", (int)Rx5808_Get_Precentage0()); break;
-            case item_about: lv_label_set_text_fmt(rx5808_div_menu[i].item_label0, "电压:%.3fV", Get_Battery_Voltage()); break;
+            case item_about: lv_label_set_text_fmt(rx5808_div_menu[i].item_label0, "电压:%.2fV", Get_Battery_Voltage()); break;
             default:break;
             }
         }
